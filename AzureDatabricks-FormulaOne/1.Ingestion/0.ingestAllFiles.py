@@ -28,3 +28,7 @@ dbutils.notebook.run("7.ingestLapTimesFile", 600)
 # COMMAND ----------
 
 dbutils.notebook.run("8.ingestQualifyingFile", 600)
+
+# COMMAND ----------
+
+dbutils.notebook.exit("COMPLETED SUCCESSFULLY")
