@@ -159,6 +159,7 @@ print(processed_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Circuits Load Confirmation Message
 dbutils.notebook.exit("CIRCUITS LOADED IN PROCESSED CONTAINER")
 
 # COMMAND ----------
@@ -316,3 +317,7 @@ spark.sql(f"""
     '{notebook_path}'
   )
 """)
+
+# COMMAND ----------
+
+dbutils.notebook.exit("DONE!")
