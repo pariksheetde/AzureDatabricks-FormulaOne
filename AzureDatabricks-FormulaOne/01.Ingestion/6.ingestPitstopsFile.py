@@ -1,6 +1,6 @@
 # Databricks notebook source
 # DBTITLE 1,Load Config File for Notebook
-# MAGIC %run "../9.Includes/1.config"
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -59,7 +59,7 @@ print(f"Number of Records Read {pit_stops_df.count()}")
 # COMMAND ----------
 
 # DBTITLE 1,Load Functions for Notebook
-# MAGIC %run "../9.Includes/2.functions"
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 

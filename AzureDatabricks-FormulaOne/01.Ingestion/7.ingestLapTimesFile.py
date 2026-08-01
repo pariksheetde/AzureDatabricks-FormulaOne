@@ -1,6 +1,6 @@
 # Databricks notebook source
 # DBTITLE 1,Run configuration file for notebook.
-# MAGIC %run "../9.Includes/1.config"
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -12,6 +12,7 @@
 # DBTITLE 1,Widget input for data source
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
+print(v_data_source)
 
 # COMMAND ----------
 
@@ -59,7 +60,7 @@ print(raw_path)
 # COMMAND ----------
 
 # DBTITLE 1,Untitled 10/26/2021 14:30
-# MAGIC %run "../9.Includes/2.functions"
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
@@ -69,7 +70,7 @@ from pyspark.sql.functions import col, current_timestamp, lit, concat, input_fil
 lap_times_renamed_df = ingest_dtm(lap_times_df) \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("raceId", "race_id") \
-.withColumn("source_file_name", input_file_name()) \
+.withColumn("source_file_name", col('_metadata.file_path')) \
 .withColumn("file_name", lit(v_data_source))
 
 display(lap_times_renamed_df)
