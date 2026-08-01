@@ -4,6 +4,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Dominant Teams Table with Race and Points Stats
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.dominant_teams;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.dominant_teams
@@ -17,6 +18,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Ranked Formula One Teams by Average Points with Minimum ...
 # MAGIC %sql
 # MAGIC INSERT INTO f1_presentation.dominant_teams
 # MAGIC SELECT 
@@ -39,6 +41,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Records in Dominant Teams Dataset
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_presentation.dominant_teams;
 
@@ -49,6 +52,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Rank Teams by Average Points for 2010 to 2020 Seasons
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC team_name
@@ -71,4 +75,5 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Notebook Completion with Successful Exit Messag ...
 dbutils.notebook.exit("EXECUTED SUCCESSFULLY")

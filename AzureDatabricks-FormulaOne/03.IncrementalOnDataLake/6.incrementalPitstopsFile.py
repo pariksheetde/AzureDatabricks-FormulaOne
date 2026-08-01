@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Get and Print Data Source Widget Value
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 print(v_data_source)
@@ -19,6 +21,7 @@ print(v_data_source)
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Parameter
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 print(v_file_date)
@@ -30,6 +33,7 @@ print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Schema for Pit Stops Data Using PySpark
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 pit_stops_schema = StructType(fields = 
@@ -50,12 +54,13 @@ pit_stops_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Inspect Incremental Pit Stops Data
 pit_stops_df = spark.read \
 .schema(pit_stops_schema) \
 .option("multiLine", True) \
 .json(f"{raw_path}/incremental/{v_file_date}/pit_stops.json")
 
-display(pit_stops_df)
+# display(pit_stops_df)
 pit_stops_df.printSchema()
 print(f"Number of Records Read {pit_stops_df.count()}")
 
@@ -68,10 +73,12 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Execute Functions Script for Reusable Utilities
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Columns and Add Metadata to Pit Stops Dataframe
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 pit_stops_renamed_df = ingest_dtm(pit_stops_df) \
@@ -80,7 +87,7 @@ pit_stops_renamed_df = ingest_dtm(pit_stops_df) \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date)) 
 
-display(pit_stops_renamed_df)
+# display(pit_stops_renamed_df)
 print(f"Number of records {pit_stops_renamed_df.count()}")
 
 # COMMAND ----------
@@ -90,6 +97,7 @@ print(f"Number of records {pit_stops_renamed_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Write Incremental Pit Stops Data to Partitioned Parquet
 # pit_stops_renamed_df.write.mode("append").partitionBy("race_id").parquet(f"{incremental_path}/pit_stops")
 
 # COMMAND ----------
@@ -99,6 +107,7 @@ print(f"Number of records {pit_stops_renamed_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Preview and Schema Check for Pit Stops Dataset
 # validate_pit_stops_df = spark.read \
 # .parquet(f"{incremental_path}/pit_stops")
 
@@ -108,11 +117,13 @@ print(f"Number of records {pit_stops_renamed_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Select Key Pit Stop Metrics from Renamed Dataframe
 sel_validate_pit_stops_df = pit_stops_renamed_df.select(col("driver_id"), col("duration"), col("lap"), col("milliseconds"), col("stop"),
                                                         col("time"), col("load_ts"), col("file_name"), col("file_date"), col("race_id"))
 
 # COMMAND ----------
 
+# DBTITLE 1,Set Partition Overwrite Mode for Spark Configuration
 spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 # COMMAND ----------
@@ -122,6 +133,7 @@ spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 # COMMAND ----------
 
+# DBTITLE 1,Write or Overwrite Pit Stops Table with Partitioning Ch ...
 if (spark._jsparkSession.catalog().tableExists("f1_incremental.pit_stops")):
   sel_validate_pit_stops_df.write.mode("overwrite").insertInto("f1_incremental.pit_stops")
 else:
@@ -129,6 +141,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Pit Stops Grouped by Race Identifier
 # MAGIC %sql
 # MAGIC SELECT
 # MAGIC race_id
@@ -139,6 +152,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Pit Stops Records Grouped by File Date
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC COUNT(*) as cnt,
@@ -149,4 +163,5 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Complete Incremental Load for Pit Stops Successful
 dbutils.notebook.exit("INCREMENTAL LOAD FOR PIT STOPS HAS BEEN LOADED SUCCESSFULLY")

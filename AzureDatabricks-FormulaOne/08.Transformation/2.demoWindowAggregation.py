@@ -1,8 +1,10 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Display Race Results for 2019 and 2020
 race_results_df = spark.read.parquet(f"{presentation_path}/race_results") \
 .filter("race_year in (2019,2020)")
 display(race_results_df)
@@ -14,6 +16,7 @@ display(race_results_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Count and Display Total Number of Races in Dataset
 from pyspark.sql.functions import count
 count_race_name_df = race_results_df.select(count("race_name").alias("count_of_races"))
 display(count_race_name_df)
@@ -25,6 +28,7 @@ display(count_race_name_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Aggregate Lewis Hamilton Points and Race Counts by Year
 from pyspark.sql.functions import *
 agg_Lewis_Hamilton_df = race_results_df.filter("driver_name = 'Lewis Hamilton'") \
 .groupBy("race_year", "driver_name") \
@@ -40,6 +44,7 @@ display(agg_Lewis_Hamilton_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Aggregate Driver Points and Race Counts by Year
 from pyspark.sql.functions import *
 
 agg_all_drivers_df = race_results_df.groupBy("race_year", "driver_name") \
@@ -55,6 +60,7 @@ display(agg_all_drivers_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Rank Drivers by Year Based on Total Points Scored
 from pyspark.sql.functions import *
 from pyspark.sql.window import Window
 
@@ -69,4 +75,5 @@ display(win_all_drivers_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Success Status Message
 dbutils.notebook.exit("EXECUTED SUCCESSFULLY")

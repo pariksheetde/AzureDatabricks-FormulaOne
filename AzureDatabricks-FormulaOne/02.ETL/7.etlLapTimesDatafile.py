@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Setup Parameter Widget for Data Source Input
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -18,6 +20,7 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Schema for Laps Data Using StructType
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType
 
 laps_schema = StructType(fields = 
@@ -37,11 +40,12 @@ laps_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Inspect Raw Lap Times Dataset
 lap_times_df = spark.read \
 .schema(laps_schema) \
 .csv(f"{raw_path}/lap_times/lap_times_*")
 
-display(lap_times_df)
+# display(lap_times_df)
 lap_times_df.printSchema()
 print(f"Number of Records Read {lap_times_df.count()}")
 
@@ -54,10 +58,12 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Import Utility Functions from External Notebook
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Lap Times Columns and Add Source File Info
 from pyspark.sql.functions import col, current_timestamp, lit, concat, input_file_name
 
 lap_times_renamed_df = ingest_dtm(lap_times_df) \
@@ -66,7 +72,7 @@ lap_times_renamed_df = ingest_dtm(lap_times_df) \
 .withColumn("source_file_name", input_file_name()) \
 .withColumn("file_name", lit(v_data_source))
 
-display(lap_times_renamed_df)
+# display(lap_times_renamed_df)
 
 # COMMAND ----------
 
@@ -75,13 +81,16 @@ display(lap_times_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Renamed Lap Times Data as Parquet Table
 lap_times_renamed_df.write.mode("overwrite").format("parquet").saveAsTable("f1_etl.lap_times")
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Records in Lap Times Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_etl.lap_times;
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Successful Loading of Lap Times in ETL Process
 dbutils.notebook.exit("LAP TIMES HAS BEEN LOADED IN F1_ETL SUCCESSFULLY")

@@ -1,4 +1,5 @@
 # Databricks notebook source
+# DBTITLE 1,Load Configuration Settings from External Notebook
 # MAGIC %run "../09.Includes/1.config" 
 
 # COMMAND ----------
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve Data Source Parameter Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -18,6 +20,7 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Constructor Data Schema with Spark Types
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 constructor_schema = "constructorId INTEGER, constructorRef STRING, name STRING, nationality STRING, url STRING"
@@ -29,6 +32,7 @@ constructor_schema = "constructorId INTEGER, constructorRef STRING, name STRING,
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Inspect Constructors Data from JSON File
 constructors_df = spark.read \
 .schema(constructor_schema) \
 .json(f"{raw_path}/constructors.json")
@@ -45,10 +49,12 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Import Custom Functions from Shared Notebook Module
 # MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Transform Constructors DataFrame Rename Columns and Add ...
 from pyspark.sql.functions import col, current_timestamp, lit
 
 rename_constructors_df = ingest_dtm(constructors_df).withColumnRenamed("constructorId", "constructor_id") \
@@ -65,13 +71,16 @@ display(rename_constructors_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Renamed Constructors Dataframe to Parquet Table
 rename_constructors_df.write.mode("overwrite").format("parquet").saveAsTable("f1_etl.constructors")
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Records in Constructors Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt from f1_etl.constructors;
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Success Message for Constructors Loa ...
 dbutils.notebook.exit("CONSTRUCTORS HAS BEEN LOADED IN F1_ETL SUCCESSFULLY")

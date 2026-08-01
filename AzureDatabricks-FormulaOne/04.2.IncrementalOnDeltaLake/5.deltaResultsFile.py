@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set Parameter for Data Source Input Widget
 dbutils.widgets.text("p_data_source", "results")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -18,11 +20,13 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Widget Parameter
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
+# DBTITLE 1,Define File Date Parameter for Data Processing
 v_file_date
 
 # COMMAND ----------
@@ -32,6 +36,7 @@ v_file_date
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Results Data Schema with Spark StructType
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 results_schema = StructType(fields = 
@@ -63,15 +68,17 @@ results_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Display Raw Data File Path Variable
 print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Display Results Data with Schema and Record Co ...
 results_df = spark.read \
 .schema(results_schema) \
 .json(f"{raw_path}/incremental/{v_file_date}/results.json")
 
-display(results_df)
+# display(results_df)
 results_df.printSchema()
 print(f"Number of Records Read {results_df.count()}")
 
@@ -79,7 +86,8 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Import Utility Functions from Shared Script
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
@@ -88,6 +96,7 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Columns and Add Metadata to Results DataFrame
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 results_renamed_df = ingest_dtm(results_df) \
@@ -104,7 +113,7 @@ results_renamed_df = ingest_dtm(results_df) \
 .withColumn("file_date", lit(v_file_date)) \
 .drop("statusId")
 
-display(results_renamed_df)
+# display(results_renamed_df)
 
 # COMMAND ----------
 
@@ -113,11 +122,12 @@ display(results_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Display Final Results Data Columns
 results_final_df = results_renamed_df.select(col("constructor_id"), col("driver_id"), col("fastest_lap"), col("fastest_lap_speed"), col("fastest_lap_time"),
                                             col("grid"), col("laps"), col("milliseconds"), col("number"), col("points"), col("position"),
                                             col("position_order"), col("position_text"), col("rank"), col("result_id"), col("time"), col("load_ts"),
                                             col("file_name"), col("file_date"), col("race_id"))
-display(results_final_df)
+# display(results_final_df)
 
 # COMMAND ----------
 
@@ -126,6 +136,7 @@ display(results_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Remove Duplicate Race and Driver Records from Results D ...
 results_deduped_df = results_final_df.dropDuplicates(["race_id", "driver_id"])
 
 # COMMAND ----------
@@ -151,6 +162,7 @@ results_deduped_df = results_final_df.dropDuplicates(["race_id", "driver_id"])
 
 # COMMAND ----------
 
+# DBTITLE 1,Merge or Create Delta Table with Deduplicated Results D ...
 from delta.tables import DeltaTable
 spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning", "true")
 
@@ -201,6 +213,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Count of Results Grouped by Race ID in Descending Order
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC   race_id, count(race_id) as cnt 
@@ -210,6 +223,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Aggregate Results Count Grouped by File Date
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC file_date, 
@@ -219,4 +233,5 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Send Success Status for Incremental Results Load
 dbutils.notebook.exit("INCREMENTAL LOAD FOR RESULTS HAS BEEN LOADED SUCCESSFULLY")

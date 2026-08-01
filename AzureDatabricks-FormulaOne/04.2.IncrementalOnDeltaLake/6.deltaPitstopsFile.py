@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External File
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Retrieve and Display Data Source Parameter Value
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")        
 print(v_data_source)
@@ -19,6 +21,7 @@ print(v_data_source)
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Parameter for Processing
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 print(v_file_date)
@@ -30,6 +33,7 @@ print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Pit Stops DataFrame Schema with Spark Types
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 pit_stops_schema = StructType(fields = 
@@ -45,6 +49,7 @@ pit_stops_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Display Current Raw Data File Path Variable
 print(raw_path)
 
 # COMMAND ----------
@@ -54,12 +59,13 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Load Pit Stops Data with Schema and Record Count
 pit_stops_df = spark.read \
 .schema(pit_stops_schema) \
 .option("multiLine", True) \
 .json(f"{raw_path}/incremental/{v_file_date}/pit_stops.json")
 
-display(pit_stops_df)
+# display(pit_stops_df)
 pit_stops_df.printSchema()
 print(f"Number of Records Read {pit_stops_df.count()}")
 
@@ -72,10 +78,12 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Import Custom Utility Functions for Analysis
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Pit Stops Columns Add Metadata and Count Records
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 pit_stops_renamed_df = ingest_dtm(pit_stops_df) \
@@ -84,7 +92,7 @@ pit_stops_renamed_df = ingest_dtm(pit_stops_df) \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date)) 
 
-display(pit_stops_renamed_df)
+# display(pit_stops_renamed_df)
 print(f"Number of records {pit_stops_renamed_df.count()}")
 
 # COMMAND ----------
@@ -112,11 +120,13 @@ print(f"Number of records {pit_stops_renamed_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Select Key Pit Stop Metrics for Validation DataFrame
 sel_validate_pit_stops_df = pit_stops_renamed_df.select(col("driver_id"), col("duration"), col("lap"), col("milliseconds"), col("stop"),
                                                         col("time"), col("load_ts"), col("file_name"), col("file_date"), col("race_id"))
 
 # COMMAND ----------
 
+# DBTITLE 1,Configure Dynamic Partition Overwrite Mode in Spark
 # spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 # COMMAND ----------
@@ -133,6 +143,7 @@ sel_validate_pit_stops_df = pit_stops_renamed_df.select(col("driver_id"), col("d
 
 # COMMAND ----------
 
+# DBTITLE 1,Merge or Initialize Pit Stops Delta Table with Partitio ...
 from delta.tables import DeltaTable
 spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning", "true")
 
@@ -159,6 +170,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Preview Sample of Pit Stops Data from Delta Table
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC *
@@ -166,6 +178,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Aggregate Pit Stop Counts Grouped by File Date
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC file_date, 
@@ -175,4 +188,5 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Successful Incremental Load for Pit Stops Data
 dbutils.notebook.exit("INCREMENTAL LOAD FOR PIT STOPS HAS BEEN LOADED SUCCESSFULLY")

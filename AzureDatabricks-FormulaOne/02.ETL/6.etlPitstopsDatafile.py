@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from Includes Folder
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve Data Source Parameter Using Widgets
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -18,6 +20,7 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Schema for Pit Stops DataFrame
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 pit_stops_schema = StructType(fields = 
@@ -38,6 +41,7 @@ pit_stops_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Inspect Pit Stops Dataframe Schema and Count
 pit_stops_df = spark.read \
 .schema(pit_stops_schema) \
 .option("multiLine", True) \
@@ -54,10 +58,12 @@ print(f"Number of Records Read {pit_stops_df.count()}")
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Run External Functions from Includes Directory
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Columns and Add Data Source Tag to Pit Stops Dat ...
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 pit_stops_renamed_df = ingest_dtm(pit_stops_df) \
@@ -74,13 +80,16 @@ display(pit_stops_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Pit Stops DataFrame as Parquet Table with Overwrit ...
 pit_stops_renamed_df.write.mode("overwrite").format("parquet").saveAsTable("f1_etl.pit_stops")
 
 # COMMAND ----------
 
+# DBTITLE 1,Query Total Number of Records in Pit Stops Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_etl.pit_stops;
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Successful PIT Load Confirmation Mes ...
 dbutils.notebook.exit("PIT HAS BEEN LOADED IN F1_ETL SUCCESSFULLY")

@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Circuits Table from CSV Data Source
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.circuits;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.circuits
@@ -27,6 +29,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Circuits in F1 Presentation Dataset
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_presentation.circuits;
 
@@ -37,6 +40,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Races Table with Schema from CSV File
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.races;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.races
@@ -55,9 +59,11 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Calculate Total Number of Races in Dataset
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_presentation.races;
 
 # COMMAND ----------
 
+# DBTITLE 1,Finalize Notebook Execution with Success Exit Code
 dbutils.notebook.exit("EXECUTED SUCCESSFULLY")

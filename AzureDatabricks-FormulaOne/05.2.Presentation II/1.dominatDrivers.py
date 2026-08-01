@@ -4,6 +4,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Dominant Drivers Table with Performance Metrics
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.dominant_drivers;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.dominant_drivers
@@ -17,6 +18,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Calculate and Rank Drivers by Average Points with Race  ...
 # MAGIC %sql
 # MAGIC INSERT INTO f1_presentation.dominant_drivers
 # MAGIC SELECT
@@ -39,6 +41,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Records in Dominant Drivers Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) AS CNT FROM f1_presentation.dominant_drivers;
 
@@ -49,6 +52,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Rank F1 Drivers by Average Points from 2010 to 2020
 # MAGIC %sql
 # MAGIC SELECT
 # MAGIC driver_name
@@ -71,4 +75,5 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Notebook Completion with Success Message
 dbutils.notebook.exit("EXECUTED SUCCESSFULLY")

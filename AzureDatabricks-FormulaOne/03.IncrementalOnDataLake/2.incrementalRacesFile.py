@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -54,7 +54,7 @@ races_df = spark.read \
 .schema(races_schema) \
 .csv(f"{raw_path}/incremental/{v_file_date}/races.csv")
 
-display(races_df)
+# display(races_df)
 races_df.printSchema()
 print(f"Number of Records Read {races_df.count()}")
 
@@ -70,7 +70,7 @@ sel_races_df = races_df.select(
                                      col("race_id"), col("year"),col("round"), "circuitid", col("name"), 
                                      col("date"), col("time"), col("url")
                                     )
-display(sel_races_df)
+# display(sel_races_df)
 
 # COMMAND ----------
 
@@ -85,7 +85,7 @@ rename_races_df = sel_races_df.withColumnRenamed("circuitid", "circuit_id") \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date))
 
-display(rename_races_df)
+# display(rename_races_df)
 
 # COMMAND ----------
 
@@ -94,7 +94,7 @@ display(rename_races_df)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
@@ -140,7 +140,7 @@ rename_races_df.write.mode("overwrite").partitionBy("race_year").format("parquet
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * from f1_incremental.races;
+# MAGIC SELECT *  from f1_incremental.races;
 
 # COMMAND ----------
 

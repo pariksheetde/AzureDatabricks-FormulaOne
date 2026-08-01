@@ -1,6 +1,6 @@
 # Databricks notebook source
 # DBTITLE 1,run the notebook to invoke configuration
-# MAGIC %run "../9.Includes/1.config"
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -9,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,set and display data source parameter widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 print(v_data_source)
@@ -20,6 +21,7 @@ print(v_data_source)
 
 # COMMAND ----------
 
+# DBTITLE 1,set and display file date widget parameter
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 print(v_file_date)
@@ -31,6 +33,7 @@ print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,define schema for laps data structure
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType
 
 laps_schema = StructType(fields = 
@@ -50,11 +53,12 @@ laps_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,load and inspect lap times data with schema and record  ...
 lap_times_df = spark.read \
 .schema(laps_schema) \
 .csv(f"{raw_path}/incremental/{v_file_date}/lap_times/lap_times_*")
 
-display(lap_times_df)
+# display(lap_times_df)
 lap_times_df.printSchema()
 print(f"Number of Records Read {lap_times_df.count()}")
 
@@ -67,10 +71,12 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,invoke shared functions and utilities notebook
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,rename lap times columns and add metadata fields
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 lap_times_renamed_df = ingest_dtm(lap_times_df) \
@@ -79,7 +85,7 @@ lap_times_renamed_df = ingest_dtm(lap_times_df) \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date))
 
-display(lap_times_renamed_df)
+# display(lap_times_renamed_df)
 
 # COMMAND ----------
 
@@ -88,6 +94,7 @@ display(lap_times_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,append partitioned lap times data to parquet storage
 # lap_times_renamed_df.write.mode("append").partitionBy("race_id").parquet(f"{incremental_path}/lap_times")
 
 # COMMAND ----------
@@ -97,6 +104,7 @@ display(lap_times_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,preview loading and record count of incremental lap tim ...
 # validate_lap_times_df = spark.read \
 # .parquet(f"{incremental_path}/lap_times")
 
@@ -111,11 +119,13 @@ display(lap_times_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,select key columns for final lap times validation
 validate_final_lap_times_df = lap_times_renamed_df.select(col("driver_id"), col("lap"), col("position"), col("time"), col("milliseconds"),
                                                           col("load_ts"), col("file_name"), col("file_date"), col("race_id"))
 
 # COMMAND ----------
 
+# DBTITLE 1,configure spark dynamic partition overwrite mode
 spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 # COMMAND ----------
@@ -125,16 +135,6 @@ if (spark._jsparkSession.catalog().tableExists("f1_incremental.lap_times")):
   validate_final_lap_times_df.write.mode("overwrite").insertInto("f1_incremental.lap_times")
 else:
   validate_final_lap_times_df.write.mode("overwrite").partitionBy("race_id").format("parquet").saveAsTable("f1_incremental.lap_times")
-
-# COMMAND ----------
-
-# %sql
-# SELECT
-# race_id
-# ,COUNT(*) as cnt FROM 
-# f1_incremental.lap_times
-# GROUP BY race_id
-# ORDER BY race_id DESC;
 
 # COMMAND ----------
 
@@ -152,8 +152,3 @@ else:
 
 # DBTITLE 1,Exiting the notebook
 dbutils.notebook.exit("INCREMENTAL LOAD FOR LAP TIMES HAS BEEN LOADED SUCCESSFULLY")
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC DROP TABLE f1_incremental.lap_times

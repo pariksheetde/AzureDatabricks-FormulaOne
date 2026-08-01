@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Script for Notebook Setup
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Get and Print Data Source Widget Value
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 print(v_data_source)
@@ -19,6 +21,7 @@ print(v_data_source)
 
 # COMMAND ----------
 
+# DBTITLE 1,Set And Retrieve File Date Widget Parameter
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 print(v_file_date)
@@ -30,6 +33,7 @@ print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Spark Schema for Race Lap Data Structure
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType
 
 laps_schema = StructType(fields = 
@@ -49,11 +53,12 @@ laps_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Inspect Lap Times Data from Incremental Folder
 lap_times_df = spark.read \
 .schema(laps_schema) \
 .csv(f"{raw_path}/incremental/{v_file_date}/lap_times/lap_times_*")
 
-display(lap_times_df)
+# display(lap_times_df)
 lap_times_df.printSchema()
 print(f"Number of Records Read {lap_times_df.count()}")
 
@@ -66,10 +71,12 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Execute Functions Script for Utility Definitions
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Lap Times Columns and Add Source Metadata
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 lap_times_renamed_df = ingest_dtm(lap_times_df) \
@@ -78,7 +85,7 @@ lap_times_renamed_df = ingest_dtm(lap_times_df) \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date))
 
-display(lap_times_renamed_df)
+# display(lap_times_renamed_df)
 
 # COMMAND ----------
 
@@ -110,6 +117,7 @@ display(lap_times_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Validate Final Lap Times Dataframe Columns
 validate_final_lap_times_df = lap_times_renamed_df.select(col("driver_id"), col("lap"), col("position"), col("time"), col("milliseconds"),
                                                           col("load_ts"), col("file_name"), col("file_date"), col("race_id"))
 
@@ -126,6 +134,7 @@ validate_final_lap_times_df = lap_times_renamed_df.select(col("driver_id"), col(
 
 # COMMAND ----------
 
+# DBTITLE 1,Merge and Update Lap Times Data into Delta Table
 from delta.tables import DeltaTable
 spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning", "true")
 
@@ -152,6 +161,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Group Lap Times by File Date with Count Aggregation
 # MAGIC %sql
 # MAGIC SELECT
 # MAGIC file_date,

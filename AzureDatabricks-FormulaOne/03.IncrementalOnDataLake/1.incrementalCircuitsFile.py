@@ -4,7 +4,8 @@
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Notebook
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -13,6 +14,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve Data Source Parameter Using Widgets
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -23,16 +25,19 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Parameter
 dbutils.widgets.text("p_file_date", "2021-04-18")
 v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
+# DBTITLE 1,Display File Path and Version Date Variables
 print(raw_path)
 print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Schema for Circuits Data Using PySpark StructTyp ...
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType
 
 circuits_schema = StructType(fields = 
@@ -55,12 +60,13 @@ circuits_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Read Circuits CSV File with Schema and Count Records
 circuits_df = spark.read \
 .option("header", True) \
 .schema(circuits_schema) \
 .csv(f"{raw_path}/incremental/{v_file_date}/circuits.csv")
 
-display(circuits_df)
+# display(circuits_df)
 circuits_df.printSchema()
 print(f"Number of Records Read {circuits_df.count()}")
 print(raw_path)
@@ -72,6 +78,7 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Rename Circuit Columns from Circuits DataFra ...
 from pyspark.sql.functions import col, lit
 sel_circuits_df = circuits_df.select(
                                      col("circuitId").alias("circuit_id"), 
@@ -79,7 +86,7 @@ sel_circuits_df = circuits_df.select(
                                      col("name"), "location", col("country"), 
                                      col("lat"), col("lng"), col("alt")
                                     )
-display(sel_circuits_df)
+# display(sel_circuits_df)
 
 # COMMAND ----------
 
@@ -88,13 +95,14 @@ display(sel_circuits_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename and Add Columns to Circuits DataFrame
 rename_circuits_df = sel_circuits_df.withColumnRenamed("lat", "latitude") \
 .withColumnRenamed("lng", "longitude") \
 .withColumnRenamed("alt", "altitude") \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date))
 
-display(rename_circuits_df)
+# display(rename_circuits_df)
 
 # COMMAND ----------
 
@@ -103,15 +111,17 @@ display(rename_circuits_df)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Load Utility Functions from External Notebook
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Add Ingestion Timestamp to Circuits DataFrame
 from pyspark.sql.functions import current_timestamp
 # circuits_final_df = rename_circuits_df.withColumn("load_dtm", current_timestamp())
 circuits_final_df = ingest_dtm(rename_circuits_df)
 
-display(circuits_final_df)
+# display(circuits_final_df)
 
 # COMMAND ----------
 
@@ -120,6 +130,7 @@ display(circuits_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Circuits DataFrame to Parquet with Overwrite Mode
 # circuits_final_df.write.mode("overwrite").parquet(f"{incremental_path}/circuits")
 
 # COMMAND ----------
@@ -129,6 +140,7 @@ display(circuits_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Read and Inspect Circuits Dataframe Schema and Record C ...
 # validate_circuits_df = spark.read \
 # .parquet(f"{incremental_path}/circuits")
 
@@ -143,25 +155,30 @@ display(circuits_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Circuits DataFrame as Parquet Table in Overwrite M ...
 circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_incremental.circuits")
 
 # COMMAND ----------
 
+# DBTITLE 1,Query All Records from Circuits Table in Incremental Da ...
 # MAGIC %sql
 # MAGIC SELECT * FROM f1_incremental.circuits;
 
 # COMMAND ----------
 
+# DBTITLE 1,Query Total Number of Records in Circuits Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_incremental.circuits;
 
 # COMMAND ----------
 
-dbutils.notebook.exit("INCREMENTAL LOAD FOR CIRCUITS HAS BEEN LOADED SUCCESSFULLY")
-
-# COMMAND ----------
-
+# DBTITLE 1,Count Records in Circuits Table Using SQL Query
 # MAGIC %sql
 # MAGIC SELECT
 # MAGIC COUNT(*) AS cnt 
 # MAGIC FROM f1_incremental.circuits LIMIT 10;
+
+# COMMAND ----------
+
+# DBTITLE 1,Confirm Successful Completion of Incremental Circuits L ...
+dbutils.notebook.exit("INCREMENTAL LOAD FOR CIRCUITS HAS BEEN LOADED SUCCESSFULLY")

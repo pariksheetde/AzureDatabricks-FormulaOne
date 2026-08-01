@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,16 +9,19 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Name Parameter Using Widgets
 dbutils.widgets.text("p_file_name", "")
 v_file_name = dbutils.widgets.get("p_file_name")
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Widget Parameter
 dbutils.widgets.text("p_file_date", "2021-03-21")
 v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
+# DBTITLE 1,Display the Current File Date Variable Value
 print(v_file_date)
 
 # COMMAND ----------
@@ -27,6 +31,7 @@ print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define schema for name fields with forename and surname
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 name_schema = StructType(fields = 
@@ -37,6 +42,7 @@ name_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Spark Schema for Drivers DataFrame Structure
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 drivers_schema = StructType(fields = 
@@ -58,11 +64,12 @@ drivers_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Inspect Drivers Dataset with Schema and Count
 drivers_df = spark.read \
 .schema(drivers_schema) \
 .json(f"{raw_path}/drivers.json")
 
-display(drivers_df)
+# display(drivers_df)
 drivers_df.printSchema()
 print(f"Number of Records Read {drivers_df.count()}")
 
@@ -73,6 +80,7 @@ print(f"Number of Records Read {drivers_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Fullname and Add File Name Column to Drivers Dat ...
 
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
@@ -86,14 +94,16 @@ explode_drivers_df = drivers_df.select(
 .withColumn("file_name", lit(v_file_name)) \
 .drop("name")
 
-display(explode_drivers_df)
+# display(explode_drivers_df)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Include Common Helper Functions from External File
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Rename Key Columns in Drivers DataFrame
 from pyspark.sql.functions import current_timestamp
 
 drivers_final_df = ingest_dtm(explode_drivers_df) \
@@ -106,7 +116,7 @@ drivers_final_df = ingest_dtm(explode_drivers_df) \
                                              col("file_name")
                                             ) 
 
-display(drivers_final_df)
+# display(drivers_final_df)
 
 # COMMAND ----------
 
@@ -115,13 +125,16 @@ display(drivers_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Overwrite Drivers DataFrame to Delta Table Storage
 drivers_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_delta.drivers")
 
 # COMMAND ----------
 
+# DBTITLE 1,Query Total Number of Records in Drivers Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt from f1_delta.drivers;
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Successful Completion of Incremental Drivers Lo ...
 dbutils.notebook.exit("INCREMENTAL LOAD FOR DRIVERS HAS BEEN LOADED SUCCESSFULLY")

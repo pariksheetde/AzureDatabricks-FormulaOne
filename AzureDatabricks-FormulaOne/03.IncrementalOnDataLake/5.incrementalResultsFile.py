@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Notebook
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set Input Widget for Data Source Parameter
 dbutils.widgets.text("p_data_source", "results")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -18,11 +20,13 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Parameter from Widget
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
+# DBTITLE 1,Define File Date Variable for Dataset Versioning
 v_file_date
 
 # COMMAND ----------
@@ -32,6 +36,7 @@ v_file_date
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Results Data Schema with Detailed Race Fields
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 results_schema = StructType(fields = 
@@ -63,11 +68,12 @@ results_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Read and Analyze Incremental Results Data File
 results_df = spark.read \
 .schema(results_schema) \
 .json(f"{raw_path}/incremental/{v_file_date}/results.json")
 
-display(results_df)
+# display(results_df)
 results_df.printSchema()
 print(f"Number of Records Read {results_df.count()}")
 
@@ -75,7 +81,8 @@ print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Load Utility Functions from Shared Notebook
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
@@ -84,6 +91,7 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Results Data Columns and Add Metadata Fields
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 results_renamed_df = ingest_dtm(results_df) \
@@ -100,7 +108,7 @@ results_renamed_df = ingest_dtm(results_df) \
 .withColumn("file_date", lit(v_file_date)) \
 .drop("statusId")
 
-display(results_renamed_df)
+# display(results_renamed_df)
 
 # COMMAND ----------
 
@@ -109,11 +117,12 @@ display(results_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Display Final Race Results with Key Metrics
 results_final_df = results_renamed_df.select(col("constructor_id"), col("driver_id"), col("fastest_lap"), col("fastest_lap_speed"), col("fastest_lap_time"),
                                             col("grid"), col("laps"), col("milliseconds"), col("number"), col("points"), col("position"),
                                             col("position_order"), col("position_text"), col("rank"), col("result_id"), col("time"), col("load_ts"),
                                             col("file_name"), col("file_date"), col("race_id"))
-display(results_final_df)
+# display(results_final_df)
 
 # COMMAND ----------
 
@@ -122,12 +131,14 @@ display(results_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Remove Existing Partitions for Each Race in Results Tab ...
 for race_id_list in results_final_df.select("race_id").distinct().collect():
   if (spark._jsparkSession.catalog().tableExists("f1_incremental.results")):
     spark.sql(f"ALTER TABLE f1_incremental.results DROP IF EXISTS PARTITION (race_id = {race_id_list.race_id})")
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Results DataFrame as Partitioned Parquet Files
 # results_final_df.write.mode("append").partitionBy("race_id").parquet(f"{incremental_path}/results")
 
 # COMMAND ----------
@@ -137,6 +148,7 @@ for race_id_list in results_final_df.select("race_id").distinct().collect():
 
 # COMMAND ----------
 
+# DBTITLE 1,Preview and Schema Check for Driver Validation Data
 # validate_drivers_df = spark.read \
 # .parquet(f"{incremental_path}/results")
 
@@ -151,10 +163,12 @@ for race_id_list in results_final_df.select("race_id").distinct().collect():
 
 # COMMAND ----------
 
+# DBTITLE 1,Append Results Data to Partitioned Parquet Table by Rac ...
 results_final_df.write.mode("append").partitionBy("race_id").format("parquet").saveAsTable("f1_incremental.results")
 
 # COMMAND ----------
 
+# DBTITLE 1,Summarize Record Counts Grouped by File Date in Results
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC   file_date, 
@@ -162,11 +176,6 @@ results_final_df.write.mode("append").partitionBy("race_id").format("parquet").s
 # MAGIC   FROM f1_incremental.results
 # MAGIC   GROUP BY file_date
 # MAGIC   ORDER BY file_date DESC;
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC -- SELECT COUNT(*) AS CNT FROM f1_incremental.results;
 
 # COMMAND ----------
 

@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from External Notebook
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Rename Columns in Races DataFrame with Count
 races_df = spark.read \
 .parquet(f"{processed_path}/races") \
 .withColumnRenamed("name", "race_name") \
@@ -23,6 +25,7 @@ print(f"Number of Records Read {races_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Rename Columns in Circuits DataFrame with Coun ...
 circuit_df = spark.read \
 .parquet(f"{processed_path}/circuits") \
 .withColumnRenamed("location", "circuit_location")
@@ -37,6 +40,7 @@ print(f"Number of Records Read {circuit_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Rename Columns in Drivers DataFrame with Count
 drivers_df = spark.read \
 .parquet(f"{processed_path}/drivers") \
 .withColumnRenamed("fullname", "driver_name") \
@@ -53,6 +57,7 @@ print(f"Number of Records Read {drivers_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Rename Constructors DataFrame with Record Coun ...
 constructors_df = spark.read \
 .parquet(f"{processed_path}/constructors") \
 .withColumnRenamed("constructor_id", "cons_id") \
@@ -68,6 +73,7 @@ print(f"Number of Records Read {constructors_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Load Results DataFrame Rename Column and Show Count
 results_df = spark.read \
 .parquet(f"{processed_path}/results") \
 .withColumnRenamed("time", "race_time")
@@ -82,12 +88,14 @@ print(f"Number of Records Read {results_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Join Races and Circuits DataFrames with Selected Column ...
 join_races_circuits_df = races_df.join(circuit_df, races_df.circuit_id == circuit_df.circuit_id, "inner") \
 .select("race_id", "race_year", "race_name", "date", "circuit_location")
 display(join_races_circuits_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Join Race Results with Drivers Constructors and Circuit ...
 from pyspark.sql.functions import current_timestamp, col
 
 join_race_results_df = results_df.join(join_races_circuits_df, results_df.race_id == join_races_circuits_df.race_id, "inner") \
@@ -107,6 +115,7 @@ display(join_race_results_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Race Results DataFrame as Parquet with Overwrite M ...
 join_race_results_df.write.mode("overwrite").parquet(f"{presentation_path}/race_results")
 
 # COMMAND ----------
@@ -116,17 +125,21 @@ join_race_results_df.write.mode("overwrite").parquet(f"{presentation_path}/race_
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Race Results DataFrame to Parquet Table with Overw ...
 join_race_results_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.race_results")
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Count Total Records in Race Results Table
 # MAGIC %sql
-# MAGIC SELECT COUNT(*) FROM f1_presentation.race_results
+# MAGIC SELECT COUNT(*) AS cnt FROM f1_presentation.race_results
 
 # COMMAND ----------
 
+# DBTITLE 1,Display Total Record Count in Joined Race Results DataF ...
 print(f"Number of Records {join_race_results_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Signal Notebook Completion with Success Message
 dbutils.notebook.exit("EXECUTED SUCCESSFULLY")

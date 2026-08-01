@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from Includes Folder
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve Data Source Parameter Using Widgets
 dbutils.widgets.text("p_data_source", "qualifying")
 v_data_source = dbutils.widgets.get("p_data_source")
 
@@ -18,11 +20,13 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Date Parameter Using Widgets
 dbutils.widgets.text("p_file_date", "")
 v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
+# DBTITLE 1,Display Current File Date Variable Value
 print(v_file_date)
 
 # COMMAND ----------
@@ -32,6 +36,7 @@ print(v_file_date)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Schema for Qualifying Data Using StructType Fiel ...
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 qualifying_schema = StructType(fields = 
@@ -54,19 +59,21 @@ qualifying_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load Qualifying Data with Schema and Count Records
 qualifying_df = spark.read \
 .schema(qualifying_schema) \
 .option("multiLine", True) \
 .json(f"{raw_path}/incremental/{v_file_date}/qualifying")
 
-display(qualifying_df)
+# display(qualifying_df)
 qualifying_df.printSchema()
 print(f"Number of Records Read {qualifying_df.count()}")
 print(raw_path)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Run Functions Script from Includes Directory
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
@@ -75,6 +82,7 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename and Enhance Columns for Qualifying Data Transfor ...
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
 qualifying_renamed_df = ingest_dtm(qualifying_df) \
@@ -85,7 +93,7 @@ qualifying_renamed_df = ingest_dtm(qualifying_df) \
 .withColumn("file_name", lit(v_data_source)) \
 .withColumn("file_date", lit(v_file_date))
 
-display(qualifying_renamed_df)
+# display(qualifying_renamed_df)
 
 # COMMAND ----------
 
@@ -112,10 +120,11 @@ display(qualifying_renamed_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Display Columns for Qualifying Data Analysis
 qualifying_final_df = qualifying_renamed_df.select(col("constructor_id"), col("driver_id"), col("number"), col("position"), col("q1"),
                                             col("q2"), col("q3"), col("qualify_id"), col("load_ts"), col("file_name"), col("file_date"),
                                             col("race_id"))
-display(qualifying_final_df)
+# display(qualifying_final_df)
 
 # COMMAND ----------
 
@@ -130,6 +139,7 @@ display(qualifying_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Merge or Create Delta Table for Qualifying Data Partiti ...
 from delta.tables import DeltaTable
 spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning", "true")
 
@@ -156,6 +166,7 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Qualifying Records Grouped by File Date
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC COUNT(*) AS CNT,
@@ -165,4 +176,5 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Incremental Load Success Message
 dbutils.notebook.exit("INCREMENTAL LOAD FOR QUALIFYING HAS BEEN LOADED SUCCESSFULLY")

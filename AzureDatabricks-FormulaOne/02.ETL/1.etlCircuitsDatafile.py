@@ -18,6 +18,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Load Configuration Settings from External Script
 # MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
@@ -27,11 +28,13 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve Data Source Parameter Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+# DBTITLE 1,Display Current Raw Data File Path
 print(raw_path)
 
 # COMMAND ----------
@@ -41,6 +44,7 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Schema for Circuits Dataset with Data Types
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType
 
 circuits_schema = StructType(fields = 
@@ -63,6 +67,7 @@ circuits_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load Circuits CSV with Schema and Show Summary
 circuits_df = spark.read \
 .option("header", True) \
 .schema(circuits_schema) \
@@ -80,6 +85,7 @@ print(raw_path)
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Rename Key Columns from Circuits Dataset
 from pyspark.sql.functions import col, lit
 
 sel_circuits_df = circuits_df.select(
@@ -97,6 +103,7 @@ display(sel_circuits_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Rename Circuit Coordinates and Add Data Source Column
 rename_circuits_df = sel_circuits_df.withColumnRenamed("lat", "latitude") \
 .withColumnRenamed("lng", "longitude") \
 .withColumnRenamed("alt", "altitude") \
@@ -111,10 +118,12 @@ display(rename_circuits_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Import Custom Functions from Shared Notebook
 # MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Add Ingestion Timestamp to Circuits Dataframe and Displ ...
 from pyspark.sql.functions import current_timestamp
 # circuits_final_df = rename_circuits_df.withColumn("load_dtm", current_timestamp())
 circuits_final_df = ingest_dtm(rename_circuits_df)
@@ -128,13 +137,16 @@ display(circuits_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Circuits DataFrame as Parquet Table with Overwrite
 circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_etl.circuits")
 
 # COMMAND ----------
 
+# DBTITLE 1,Query Total Number of Circuits in Dataset
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_etl.circuits;
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Successful Completion of Circuits Data Load
 dbutils.notebook.exit("CIRCUITS HAS BEEN LOADED IN F1_ETL SUCCESSFULLY")

@@ -1,5 +1,6 @@
 # Databricks notebook source
-# MAGIC %run "../9.Includes/1.config"
+# DBTITLE 1,Load Configuration Settings from Included Script
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -8,6 +9,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Set and Retrieve File Name Parameter Using Widgets
 dbutils.widgets.text("p_file_name", "")
 v_file_name = dbutils.widgets.get("p_file_name")
 
@@ -18,6 +20,7 @@ v_file_name = dbutils.widgets.get("p_file_name")
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Name Schema with StringType Fields
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 name_schema = StructType(fields = 
@@ -28,6 +31,7 @@ name_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Define Spark Schema for Drivers Dataset with Nested Nam ...
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, FloatType, DoubleType, DateType
 
 drivers_schema = StructType(fields = 
@@ -49,6 +53,7 @@ drivers_schema = StructType(fields =
 
 # COMMAND ----------
 
+# DBTITLE 1,Load and Display Drivers Data with Schema and Count
 drivers_df = spark.read \
 .schema(drivers_schema) \
 .json(f"{raw_path}/drivers.json")
@@ -64,6 +69,7 @@ print(f"Number of Records Read {drivers_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Transform Drivers Data with Fullname and File Name Colu ...
 
 from pyspark.sql.functions import col, current_timestamp, lit, concat
 
@@ -81,10 +87,12 @@ display(explode_drivers_df)
 
 # COMMAND ----------
 
-# MAGIC %run "../9.Includes/2.functions"
+# DBTITLE 1,Execute Helper Functions from External Script
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
+# DBTITLE 1,Select and Rename Key Columns in Drivers Dataframe
 from pyspark.sql.functions import current_timestamp
 
 drivers_final_df = ingest_dtm(explode_drivers_df) \
@@ -106,13 +114,16 @@ display(drivers_final_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save Drivers DataFrame as Parquet Table in Overwrite Mo ...
 drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_etl.drivers")
 
 # COMMAND ----------
 
+# DBTITLE 1,Get Total Count of Records in Drivers Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt from f1_etl.drivers;
 
 # COMMAND ----------
 
+# DBTITLE 1,Confirm Successful Driver Load in F1 ETL Process
 dbutils.notebook.exit("DRIVER HAS BEEN LOADED IN F1_ETL SUCCESSFULLY")

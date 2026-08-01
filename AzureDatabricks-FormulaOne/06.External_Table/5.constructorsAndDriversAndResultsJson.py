@@ -6,6 +6,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Formula One Constructors Table from JSON Data
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.constructors;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.constructors
@@ -21,6 +22,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Display All Records from Constructors Table
 # MAGIC %sql
 # MAGIC SELECT * FROM f1_presentation.constructors;
 
@@ -33,6 +35,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Drivers Table from JSON Data Source
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.drivers;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.drivers
@@ -51,6 +54,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Retrieve Driver Details from Drivers Table
 # MAGIC %sql
 # MAGIC SELECT 
 # MAGIC code, 
@@ -68,6 +72,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Formula One Race Results Table from JSON
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.results;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.results
@@ -96,6 +101,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Rows in Formula One Results Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_presentation.results;
 
@@ -108,6 +114,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Pit Stops Table from JSON Data Source
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.pit_stops;
 # MAGIC CREATE TABLE f1_presentation.pit_stops
@@ -125,6 +132,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Display All Records from Pit Stops Table
 # MAGIC %sql
 # MAGIC SELECT * FROM f1_presentation.pit_stops;
 
@@ -137,6 +145,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Lap Times Table from CSV Data Source
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.lap_times;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.lap_times
@@ -153,6 +162,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Rows in Lap Times Dataset
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_presentation.lap_times;
 
@@ -165,6 +175,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create Qualifying Table from JSON Data Source
 # MAGIC %sql
 # MAGIC DROP TABLE IF EXISTS f1_presentation.qualifying;
 # MAGIC CREATE TABLE IF NOT EXISTS f1_presentation.qualifying
@@ -184,9 +195,11 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Count Total Rows in Qualifying Results Table
 # MAGIC %sql
 # MAGIC SELECT COUNT(*) as cnt FROM f1_presentation.qualifying;
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Successful Execution Status
 dbutils.notebook.exit("EXECUTED SUCCESSFULLY")
