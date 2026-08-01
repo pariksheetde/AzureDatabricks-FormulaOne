@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "1"
+# ///
 # MAGIC %md
 # MAGIC #### DEFINE SCHEMA FOR CIRCUITS.CSV FILE
 # MAGIC
@@ -19,7 +23,7 @@
 # COMMAND ----------
 
 # DBTITLE 1,Include configuration file
-# MAGIC %run "../9.Includes/1.config"
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -119,7 +123,7 @@ display(rename_circuits_df)
 # COMMAND ----------
 
 # DBTITLE 1,Import functions from included file
-# MAGIC %run "../9.Includes/2.functions"
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 

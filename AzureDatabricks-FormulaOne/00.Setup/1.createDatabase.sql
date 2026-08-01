@@ -46,14 +46,21 @@ CREATE DATABASE IF NOT EXISTS f1_processed;
 
 -- COMMAND ----------
 
+-- MAGIC %python
+-- MAGIC dbutils.notebook.exit("DATABASE CREATION EXECUTED SUCCESSFULLY")
+
+-- COMMAND ----------
+
 -- MAGIC %md
 -- MAGIC #### CREATE EXTERNAL LOCATION FOR BRONZE FOR UNITY CATALOG
 
 -- COMMAND ----------
 
-CREATE EXTERNAL LOCATION IF NOT EXISTS formulaone_dev_adls_ext_bronze
-URL 'abfss://f1uc@formula1dbdevadls.dfs.core.windows.net/bronze'
-WITH (STORAGE CREDENTIAL `formulaone-dev-adls-storage-credential`)
+-- MAGIC %skip
+-- MAGIC %sql
+-- MAGIC CREATE EXTERNAL LOCATION IF NOT EXISTS formulaone_dev_adls_ext_bronze
+-- MAGIC URL 'abfss://f1uc@formula1dbdevadls.dfs.core.windows.net/bronze'
+-- MAGIC WITH (STORAGE CREDENTIAL `formulaone-dev-adls-storage-credential`) 
 
 -- COMMAND ----------
 
@@ -122,8 +129,3 @@ CREATE TABLE IF NOT EXISTS formulaone_dev.bronze.audit_log (
   error_message STRING,
   run_date TIMESTAMP
 )
-
--- COMMAND ----------
-
--- MAGIC %python
--- MAGIC dbutils.notebook.exit("DATABASE CREATION EXECUTED SUCCESSFULLY")

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # DBTITLE 1,Import Configuration File
-# MAGIC %run "../9.Includes/1.config" 
+# MAGIC %run "../09.Includes/1.config" 
 
 # COMMAND ----------
 
@@ -50,7 +50,7 @@ print(raw_path)
 # COMMAND ----------
 
 # DBTITLE 1,Function Invocation from Functions File
-# MAGIC %run "../9.Includes/2.functions"
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # DBTITLE 1,Run Configuration File Import
-# MAGIC %run "../9.Includes/1.config"
+# MAGIC %run "../09.Includes/1.config"
 
 # COMMAND ----------
 
@@ -69,7 +69,7 @@ print(f"Number of Records Read {results_df.count()}")
 # COMMAND ----------
 
 # DBTITLE 1,Import Functions File
-# MAGIC %run "../9.Includes/2.functions"
+# MAGIC %run "../09.Includes/2.functions"
 
 # COMMAND ----------
 
@@ -118,6 +118,7 @@ print(f"NUMBER OF RECORDS TO BE PROCESSED: {validate_drivers_df.count()}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Exit Notebook with Processed Results Message
 dbutils.notebook.exit("RESULTS LOADED IN PROCESSED CONTAINER")
 
 # COMMAND ----------
